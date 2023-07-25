@@ -2,6 +2,8 @@ const express = require('express')
 const app = express()
 const port = 3000
 
+const elasticClient = require("./elastic-client");
+
 app.get('/es-demo', (req, res) => {
   res.status(200).json({ message: 'Elasticsearch Skeleton reporting for duty! 💀'})
 })
