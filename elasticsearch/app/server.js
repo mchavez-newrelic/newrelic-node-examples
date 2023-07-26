@@ -21,7 +21,7 @@ const indexExists = async (indexName) => {
   return result;
 };
 
-const postExists = async (indexName, postId) => {
+const documentExists = async (indexName, postId) => {
   const result = await elasticClient.exists({
     id: postId,
     index: indexName,
@@ -30,11 +30,34 @@ const postExists = async (indexName, postId) => {
   return result;
 };
 
-app.get("/search", async (req, res) => {
+const searchDocument = async (title) => {
   const result = await elasticClient.search({
     index: "posts",
-    query: { fuzzy: { title: req.body.document } },
+    query: { fuzzy: { title } },
   });
+
+  return result;
+};
+
+const createDocument = async (title) => {
+  await elasticClient.index({
+    index: "posts",
+    id: title,
+    document: {
+      title,
+    },
+  });
+};
+
+const deleteDocument = async (title) => {
+  await elasticClient.delete({
+    id: title,
+    index: "posts",
+  });
+}
+
+app.get("/search", async (req, res) => {
+  const result = await searchDocument(req.body.document);
 
   const hits = result.hits.hits;
   const results = hits.map((document) => document._source.title);
@@ -44,7 +67,7 @@ app.get("/search", async (req, res) => {
 
 app.post("/create-document", async (req, res) => {
   const documentTitle = req.body.document;
-  const duplicateDocument = await postExists("posts", documentTitle);
+  const duplicateDocument = await documentExists("posts", documentTitle);
 
   if (duplicateDocument) {
     res
@@ -53,32 +76,23 @@ app.post("/create-document", async (req, res) => {
     return;
   }
 
-  await elasticClient.index({
-    index: "posts",
-    id: documentTitle,
-    document: {
-      title: documentTitle,
-    },
-  });
+  await createDocument(documentTitle);
 
   res.status(201).json({ message: `Document ${documentTitle} created` });
 });
 
 app.post("/delete-document", async (req, res) => {
   const documentTitle = req.body.document;
-  const documentExists = await postExists("posts", documentTitle);
+  const documentInIndex = await documentExists("posts", documentTitle);
 
-  if (!documentExists) {
+  if (!documentInIndex) {
     res
       .status(404)
       .json({ message: `Document ${documentTitle} does not exist` });
     return;
   }
 
-  await elasticClient.delete({
-    id: documentTitle,
-    index: "posts",
-  });
+  await deleteDocument(documentTitle);
 
   res.status(200).json({ message: `Document ${documentTitle} deleted` });
 });
