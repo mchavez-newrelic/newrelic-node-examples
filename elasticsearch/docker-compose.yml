@@ -8,6 +8,9 @@ services:
     command: npm run start
     ports:
       - 3000:3000
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.8.2
     environment:
@@ -18,11 +21,10 @@ services:
       memlock:
         soft: -1
         hard: -1
-    volumes:
-      - elasticsearch-data:/usr/share/elasticsearch/data
     ports:
       - 9200:9200
-
-volumes:
- elasticsearch-data:
-  driver: local
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200 || exit 1"]
+      interval: 2s
+      timeout: 5s
+      retries: 120
