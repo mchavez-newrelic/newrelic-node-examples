@@ -38,9 +38,9 @@ app.get("/es-demo", (req, res) => {
 });
 
 app.post("/create-post", async (req, res) => {
-  const duplicatePost = await postExists("posts", "My document");
+  const duplicateDocument = await postExists("posts", "My document");
 
-  if (duplicatePost) {
+  if (duplicateDocument) {
     res.status(409).json({ message: "Document already exists" });
     return;
   }
@@ -54,6 +54,22 @@ app.post("/create-post", async (req, res) => {
   });
 
   res.status(201).json({ message: "Document created" });
+});
+
+app.post("/delete-post", async (req, res) => {
+  const documentExists = await postExists("posts", "My document");
+
+  if (!documentExists) {
+    res.status(404).json({ message: "Document does not exist" });
+    return;
+  }
+
+  await elasticClient.delete({
+    id: "My document",
+    index: "posts",
+  });
+
+  res.status(200).json({ message: "Document deleted" });
 });
 
 app.listen(port, () => {
