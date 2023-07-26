@@ -30,16 +30,6 @@ const postExists = async (indexName, postId) => {
   return result;
 };
 
-app.get("/", (req, res) => {
-  res.sendFile(__dirname + "/index.html");
-});
-
-app.get("/es-demo", (req, res) => {
-  res
-    .status(200)
-    .json({ message: "Elasticsearch Skeleton reporting for duty! 💀" });
-});
-
 app.post("/create-document", async (req, res) => {
   const documentTitle = req.body.document;
   const duplicateDocument = await postExists("posts", documentTitle);
