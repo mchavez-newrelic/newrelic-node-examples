@@ -3,7 +3,7 @@ const app = express();
 const port = 3000;
 
 const elasticClient = require("./elastic-client");
-const bodyParser = require("body-parser")
+const bodyParser = require("body-parser");
 
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -47,7 +47,9 @@ app.post("/create-document", async (req, res) => {
   const duplicateDocument = await postExists("posts", documentTitle);
 
   if (duplicateDocument) {
-    res.status(409).json({ message: `Document ${documentTitle} already exists` });
+    res
+      .status(409)
+      .json({ message: `Document ${documentTitle} already exists` });
     return;
   }
 
@@ -67,7 +69,9 @@ app.post("/delete-document", async (req, res) => {
   const documentExists = await postExists("posts", documentTitle);
 
   if (!documentExists) {
-    res.status(404).json({ message: `Document ${documentTitle} does not exist` });
+    res
+      .status(404)
+      .json({ message: `Document ${documentTitle} does not exist` });
     return;
   }
 
