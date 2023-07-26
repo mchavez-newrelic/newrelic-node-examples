@@ -3,6 +3,9 @@ const app = express();
 const port = 3000;
 
 const elasticClient = require("./elastic-client");
+const bodyParser = require("body-parser")
+
+app.use(bodyParser.urlencoded({ extended: true }));
 
 const createIndex = async (indexName) => {
   await elasticClient.indices.create({
@@ -37,39 +40,41 @@ app.get("/es-demo", (req, res) => {
     .json({ message: "Elasticsearch Skeleton reporting for duty! 💀" });
 });
 
-app.post("/create-post", async (req, res) => {
-  const duplicateDocument = await postExists("posts", "My document");
+app.post("/create-document", async (req, res) => {
+  const documentTitle = req.body.document;
+  const duplicateDocument = await postExists("posts", documentTitle);
 
   if (duplicateDocument) {
-    res.status(409).json({ message: "Document already exists" });
+    res.status(409).json({ message: `Document ${documentTitle} already exists` });
     return;
   }
 
   await elasticClient.index({
     index: "posts",
-    id: "My document",
+    id: documentTitle,
     document: {
-      title: "My document",
+      title: documentTitle,
     },
   });
 
-  res.status(201).json({ message: "Document created" });
+  res.status(201).json({ message: `Document ${documentTitle} created` });
 });
 
-app.post("/delete-post", async (req, res) => {
-  const documentExists = await postExists("posts", "My document");
+app.post("/delete-document", async (req, res) => {
+  const documentTitle = req.body.document;
+  const documentExists = await postExists("posts", documentTitle);
 
   if (!documentExists) {
-    res.status(404).json({ message: "Document does not exist" });
+    res.status(404).json({ message: `Document ${documentTitle} does not exist` });
     return;
   }
 
   await elasticClient.delete({
-    id: "My document",
+    id: documentTitle,
     index: "posts",
   });
 
-  res.status(200).json({ message: "Document deleted" });
+  res.status(200).json({ message: `Document ${documentTitle} deleted` });
 });
 
 app.listen(port, () => {
