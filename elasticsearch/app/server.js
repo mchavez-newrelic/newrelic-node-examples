@@ -30,6 +30,18 @@ const postExists = async (indexName, postId) => {
   return result;
 };
 
+app.get("/search", async (req, res) => {
+  const result = await elasticClient.search({
+    index: "posts",
+    query: { fuzzy: { title: req.body.document } },
+  });
+
+  const hits = result.hits.hits;
+  const results = hits.map((document) => document._source.title);
+
+  res.status(200).json({ results });
+});
+
 app.post("/create-document", async (req, res) => {
   const documentTitle = req.body.document;
   const duplicateDocument = await postExists("posts", documentTitle);
