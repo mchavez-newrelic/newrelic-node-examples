@@ -55,9 +55,10 @@ app.post("/delete-document", async (req, res) => {
   res.status(200).json({ message: `Document ${documentTitle} deleted` });
 });
 
-app.listen(port, () => {
-  if (!indexExists("posts")) {
-    createIndex("posts");
+app.listen(port, async () => {
+  const hasIndex = await indexExists("posts")
+  if (!hasIndex) {
+    await createIndex("posts");
   }
   console.log(`Example app listening on port ${port}`);
 });
