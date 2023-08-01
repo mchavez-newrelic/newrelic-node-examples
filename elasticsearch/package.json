@@ -4,7 +4,7 @@
   "description": "",
   "main": "app/server.js",
   "scripts": {
-    "start": "node -r newrelic app/server.js"
+    "start": "node --inspect-brk -r dotenv/config -r ./app/instrumentation app/server.js"
   },
   "keywords": [],
   "author": "",
