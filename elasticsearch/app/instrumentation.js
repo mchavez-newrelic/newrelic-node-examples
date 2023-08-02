@@ -17,22 +17,18 @@ function instrumentElastic(shim, elastic, moduleName) {
         return {
             fnName,
             parameters,
-            callback: function bindCallback(shim, _f, _n, segment) {
-                shim.bindCallbackSegment(newArgs, shim.SECOND, segment)
-            }
+            promise: true
         }
     })
 
-    shim.recordQuery(TransportLibrary.Transport.prototype, 'request', function(originalFn) {
+    shim.recordQuery(elastic.Transport.prototype, 'request', function wrapRequest() {
         debugger
         return function wrappedRequest() {
-            const args = shim.argsToArray.apply(shim, arguments)
-            shim.addAttribute(args[3])
-            return originalFn.apply(this, arguments);
+            const args = shim.argsToArray.apply(shim, arguments);
+            return {
+                query: args[3][0].body.query.fuzzy.title,
+                promise: true
+            }
         }
-        // return {
-        //     promise: true,
-        //     query: shim.FIRST
-        // }
     });
 }
