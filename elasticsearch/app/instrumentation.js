@@ -34,16 +34,6 @@ function instrumentElastic(shim, elastic, moduleName) {
     
     // cwd is node_modules/@elastic/elasticsearch w/ shim.require so use the relative path
     const Transport = elastic.Transport;
-    
-    // shim.recordOperation(Transport.prototype, 'addConnection', function (shim, addConnection, name, args) {
-    //     const parameters = {'host': args[0]};
-    
-    //     return {
-    //         name,
-    //         parameters,
-    //         promise: true
-    //     }
-    // })
 
     shim.recordQuery(Transport.prototype, 'request', function(shim, _, __, args) {
         // simply grab the first connection in the connection pool
