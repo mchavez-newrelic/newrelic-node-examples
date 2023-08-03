@@ -15,7 +15,7 @@ const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.get("/search", async (req, res) => {
-  const result = await searchDocument(req.body.document);
+  const result = await searchDocument(req.query.document);
 
   const hits = result.hits.hits;
   const results = hits.map((document) => document._source.title);
