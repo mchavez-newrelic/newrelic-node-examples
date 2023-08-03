@@ -39,7 +39,7 @@ app.post("/create-document", async (req, res) => {
   res.status(201).json({ message: `Document ${documentTitle} created` });
 });
 
-app.post("/delete-document", async (req, res) => {
+app.delete("/delete-document", async (req, res) => {
   const documentTitle = req.body.document;
   const documentInIndex = await documentExists("posts", documentTitle);
 
