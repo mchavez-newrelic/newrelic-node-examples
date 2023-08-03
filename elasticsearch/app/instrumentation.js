@@ -5,14 +5,27 @@ newrelic.instrumentDatastore('@elastic/elasticsearch', instrumentElastic);
 
 function instrumentElastic(shim, elastic, moduleName) {
     function queryParser(params) {
-        // TODO: depending on the elastic search request the params need 
-        // further logic applied to determine the operation
         params = JSON.parse(params);
         const path = params.path.split('/');
+        const method = params.method;
+
+        let operation = "other";
+        let query = JSON.stringify(params?.body)?.replaceAll('"','');
+        if (path?.[2] === "_doc" && method === "PUT") {
+            operation = "create";
+        }
+        else if (path?.[2] === "_doc" && method === "DELETE") {
+            operation = "delete";
+            query = `{ title: ${path?.[3]?.replaceAll('%20', ' ')} }`;
+        }
+        else if (path?.[2] === "_search" && method === "POST") {
+            operation = "search";
+        }
+
         return {
             collection: path?.[1],
-            operation: path?.[2]?.replace('_',''),
-            query: JSON.stringify(params?.body?.query)?.replaceAll('"',''),
+            operation,
+            query,
         }
     }
 
@@ -32,7 +45,7 @@ function instrumentElastic(shim, elastic, moduleName) {
     //     }
     // })
 
-    shim.recordQuery(Transport.prototype, 'request', function(shim, request, name, args) {
+    shim.recordQuery(Transport.prototype, 'request', function(shim, _, __, args) {
         // simply grab the first connection in the connection pool
         const connection = this.connectionPool.connections[0];
         return {
