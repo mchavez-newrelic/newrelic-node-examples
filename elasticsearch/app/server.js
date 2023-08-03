@@ -15,7 +15,7 @@ const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.get("/search", async (req, res) => {
-  const result = await searchDocument(req.query.document);
+  const result = await searchDocument(req.query.title);
 
   const hits = result.hits.hits;
   const results = hits.map((document) => document._source.title);
@@ -40,7 +40,7 @@ app.post("/create-document", async (req, res) => {
 });
 
 app.delete("/delete-document", async (req, res) => {
-  const documentTitle = req.body.document;
+  const documentTitle = req.query.title;
   const documentInIndex = await documentExists("posts", documentTitle);
 
   if (!documentInIndex) {
