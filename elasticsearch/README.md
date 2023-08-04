@@ -59,3 +59,11 @@ You can access the REST API of the server using the following endpoints:
 - `/delete-document`: Delete a document
   - Query Parameters:
     - `title`: This specifies which document should be deleted through an exact match on the title
+
+## Custom instrumentation
+
+This example app uses the New Relic [Datastore Instrumentation](https://newrelic.github.io/node-newrelic/tutorial-Datastore-Simple.html). The custom instrumentation for this example app can be found in `/elasticsearch/app/instrumentation.js`
+
+The custom instrumentation follows the example given in the Datastore Instrumentation docs, with a couple modifications detailed below.
+1. A query parser is implemented to parse the Elasticsearch query. The example app relies on the full Query DSL (Domain Specific Language) provided by [Elasticsearch](https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl.html), which is based on JSON rather than traditional SQL. As such, we implement a `queryParser` function to parse the parameters in the requests to the Express API endpoints to grab the appropriate query based on the type of operation (Create, Search, Delete).
+2. Since the Node.js client for Elasticsearch dropped their [callback-style API](https://www.elastic.co/guide/en/elasticsearch/client/javascript-api/current/changelog-client.html#_drop_callback_style_api) since version 8.0, we must use a promise based API. As such, we specify `promise: true` in our returned object for [`shim.recordQuery`](https://newrelic.github.io/node-newrelic/DatastoreShim.html#recordQuery) rather than specifying the argument position of a callback.
